@@ -31,7 +31,8 @@ public class ClientCheckService {
 
         if (getClientResult instanceof GetClientResult.NotFound) {
             return new CheckResult.ClientNotFound();
-        } else if (getClientResult instanceof GetClientResult.TechnicalError) {
+        }
+        if (getClientResult instanceof GetClientResult.TechnicalError) {
             return new CheckResult.ServiceUnavailable();
         }
 
@@ -74,7 +75,8 @@ public class ClientCheckService {
 
         if (updateAmlStatusResult instanceof UpdateAmlStatusResult.NotFound){
             return new CheckResult.ClientNotFound();
-        } else if (updateAmlStatusResult instanceof UpdateAmlStatusResult.TechnicalError){
+        }
+        if (updateAmlStatusResult instanceof UpdateAmlStatusResult.TechnicalError){
             return new CheckResult.ServiceUnavailable();
         }
 
