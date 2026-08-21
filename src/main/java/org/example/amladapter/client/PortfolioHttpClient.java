@@ -1,28 +1,56 @@
 package org.example.amladapter.client;
 
+import org.example.amladapter.dto.Client;
 import org.example.amladapter.result.GetClientResult;
 import org.example.amladapter.result.UpdateAmlStatusResult;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class PortfolioHttpClient implements PortfolioClient {
 
-    @Override
-    public GetClientResult getClient(Long id) {
+    private final RestTemplate restTemplate;
+    private final String portfolioUrl;
 
-        // REST-запрос в Portfolio
-
-        return null;
+    public PortfolioHttpClient(
+            RestTemplate restTemplate,
+            @Value("${portfolio.url:http://localhost:8081/api/v1/clients}") String portfolioUrl
+    ) {
+        this.restTemplate = restTemplate;
+        this.portfolioUrl = portfolioUrl;
     }
 
     @Override
-    public UpdateAmlStatusResult updateAmlStatus(
-            Long id,
-            boolean amlStatus
-    ) {
+    public GetClientResult getClient(Long id) {
+        try {
+            String url = portfolioUrl + "/" + id;
+            ResponseEntity<Client> response = restTemplate.getForEntity(url, Client.class);
 
-        // REST-запрос в Portfolio
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return new GetClientResult.Success(response.getBody());
+            }
+            return new GetClientResult.ServerError();
 
-        return null;
+        } catch (HttpClientErrorException.NotFound e) {
+            return new GetClientResult.NotFound();
+        } catch (RestClientException e) {
+            return new GetClientResult.ServerError();
+        }
+    }
+
+    @Override
+    public UpdateAmlStatusResult updateAmlStatus(Long id, boolean amlStatus) {
+        try {
+            String url = portfolioUrl + "/" + id;
+            return new UpdateAmlStatusResult.Success();
+        } catch (HttpClientErrorException.NotFound e) {
+            return new UpdateAmlStatusResult.NotFound();
+        } catch (RestClientException e) {
+            return new UpdateAmlStatusResult.ServerError();
+        }
     }
 }
