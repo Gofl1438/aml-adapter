@@ -41,10 +41,10 @@ public class CreditBureauHttpClient implements CreditBureauClient {
                 return parseXmlResponse(response.getBody());
             }
 
-            return new AmlCheckResult.ServerError();
+            return new AmlCheckResult.TechnicalError(AmlCheckResult.TechnicalError.ErrorCode.SERVICE_ERROR);
 
         } catch (RestClientException e) {
-            return new AmlCheckResult.ServerError();
+            return new AmlCheckResult.TechnicalError(AmlCheckResult.TechnicalError.ErrorCode.SERVICE_ERROR);
         }
     }
 
@@ -58,10 +58,10 @@ public class CreditBureauHttpClient implements CreditBureauClient {
 
     private AmlCheckResult parseXmlResponse(String xml) {
         if (xml.contains("<faultcode>soap:Client</faultcode>")) {
-            return new AmlCheckResult.ValidationError();
+            return new AmlCheckResult.TechnicalError(AmlCheckResult.TechnicalError.ErrorCode.VALIDATION_ERROR);
         }
         if (xml.contains("<faultcode>soap:Server</faultcode>")) {
-            return new AmlCheckResult.ServerError();
+            return new AmlCheckResult.TechnicalError(AmlCheckResult.TechnicalError.ErrorCode.SERVICE_ERROR);
         }
         if (xml.contains("<amlStatus>true</amlStatus>")) {
             return new AmlCheckResult.Success(true);
@@ -70,6 +70,6 @@ public class CreditBureauHttpClient implements CreditBureauClient {
             return new AmlCheckResult.Success(false);
         }
 
-        return new AmlCheckResult.ServerError();
+        return new AmlCheckResult.TechnicalError(AmlCheckResult.TechnicalError.ErrorCode.SERVICE_ERROR);
     }
 }
