@@ -25,7 +25,7 @@ public class PortfolioHttpClient implements PortfolioClient {
     }
 
     @Override
-    public GetClientResult getClient(Long id) {
+    public GetClientResult getClient(long id) {
         try {
             String url = portfolioUrl + "/" + id;
             ResponseEntity<Client> response = restTemplate.getForEntity(url, Client.class);
@@ -33,24 +33,24 @@ public class PortfolioHttpClient implements PortfolioClient {
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return new GetClientResult.Success(response.getBody());
             }
-            return new GetClientResult.ServerError();
+            return new GetClientResult.TechnicalError();
 
         } catch (HttpClientErrorException.NotFound e) {
             return new GetClientResult.NotFound();
         } catch (RestClientException e) {
-            return new GetClientResult.ServerError();
+            return new GetClientResult.TechnicalError();
         }
     }
 
     @Override
-    public UpdateAmlStatusResult updateAmlStatus(Long id, boolean amlStatus) {
+    public UpdateAmlStatusResult updateAmlStatus(long id, boolean amlStatus) {
         try {
             String url = portfolioUrl + "/" + id;
             return new UpdateAmlStatusResult.Success();
         } catch (HttpClientErrorException.NotFound e) {
             return new UpdateAmlStatusResult.NotFound();
         } catch (RestClientException e) {
-            return new UpdateAmlStatusResult.ServerError();
+            return new UpdateAmlStatusResult.TechnicalError();
         }
     }
 }

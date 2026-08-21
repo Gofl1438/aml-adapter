@@ -1,0 +1,15 @@
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\AmlAdapterApplication.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\client\CreditBureauClient.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\client\CreditBureauHttpClient.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\client\PortfolioClient.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\client\PortfolioHttpClient.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\config\RestTemplateConfig.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\controller\ClientCheckController.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\dto\Client.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\dto\CreditBureauRequest.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\result\AmlCheckResult.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\result\GetClientResult.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\result\TimerCheckResult.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\result\UpdateAmlStatusResult.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\service\CheckResult.java
+D:\Практика СКБТ\aml-adapter\src\main\java\org\example\amladapter\service\ClientCheckService.java
