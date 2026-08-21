@@ -3,7 +3,7 @@ package org.example.amladapter.dto;
 import java.time.Instant;
 
 public record Client(
-        Long id,
+        long id,
         String fio,
         String inn,
         String snils,

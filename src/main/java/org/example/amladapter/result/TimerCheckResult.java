@@ -1,9 +1,6 @@
 package org.example.amladapter.result;
 
-public sealed interface TimerCheckResult
-        permits TimerCheckResult.Allowed,
-        TimerCheckResult.TooEarly {
-
+public sealed interface TimerCheckResult{
     record Allowed() implements TimerCheckResult {
     }
 

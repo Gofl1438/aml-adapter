@@ -1,12 +1,6 @@
 package org.example.amladapter.service;
 
-public sealed interface CheckResult
-        permits CheckResult.Success,
-        CheckResult.ClientNotFound,
-        CheckResult.TooEarly,
-        CheckResult.ProcessingError,
-        CheckResult.ServiceUnavailable {
-
+public sealed interface CheckResult {
     record Success(boolean amlStatus) implements CheckResult {
     }
 

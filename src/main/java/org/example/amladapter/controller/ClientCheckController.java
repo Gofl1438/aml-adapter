@@ -18,7 +18,7 @@ public class ClientCheckController {
     }
 
     @PostMapping("/{id}/check")
-    public ResponseEntity<?> checkClient(@PathVariable Long id){
+    public ResponseEntity<?> checkClient(@PathVariable long id){
         CheckResult result = service.checkClient(id);
 
         // TO DO
