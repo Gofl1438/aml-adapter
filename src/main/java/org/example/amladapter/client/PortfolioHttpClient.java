@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class PortfolioHttpClient implements PortfolioClient {
 
     @Override
-    public GetClientResult getClient(Long id) {
+    public GetClientResult getClient(long id) {
 
         // REST-запрос в Portfolio
 
@@ -17,7 +17,7 @@ public class PortfolioHttpClient implements PortfolioClient {
 
     @Override
     public UpdateAmlStatusResult updateAmlStatus(
-            Long id,
+            long id,
             boolean amlStatus
     ) {
 

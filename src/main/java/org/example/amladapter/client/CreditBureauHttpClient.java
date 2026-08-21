@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CreditBureauHttpClient implements CreditBureauClient {
-
     @Override
     public AmlCheckResult checkStatus(
             CreditBureauRequest request

@@ -1,16 +1,14 @@
 package org.example.amladapter.result;
 
-public sealed interface AmlCheckResult
-        permits AmlCheckResult.Success,
-        AmlCheckResult.ValidationError,
-        AmlCheckResult.ServerError {
-
+public sealed interface AmlCheckResult {
     record Success(boolean amlStatus) implements AmlCheckResult {
     }
 
-    record ValidationError() implements AmlCheckResult {
-    }
+    record TechnicalError(ErrorCode code) implements AmlCheckResult {
 
-    record ServerError() implements AmlCheckResult {
+        public enum ErrorCode {
+            VALIDATION_ERROR,
+            SERVICE_ERROR
+        }
     }
 }
