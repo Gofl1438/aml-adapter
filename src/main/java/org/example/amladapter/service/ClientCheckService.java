@@ -67,6 +67,10 @@ public class ClientCheckService {
             }
         }
 
+        if (amlCheckResult instanceof AmlCheckResult.RetryExhausted) {
+            return new CheckResult.ResultUndefined();
+        }
+
         AmlCheckResult.Success amlCheckSuccess = (AmlCheckResult.Success) amlCheckResult;
 
         // Этап обновления AML-статуса

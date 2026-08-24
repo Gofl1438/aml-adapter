@@ -25,8 +25,29 @@ public class CreditBureauHttpClient implements CreditBureauClient {
         this.creditBureauUrl = creditBureauUrl;
     }
 
+    private static final int MAX_RETRIES = 5;
+
     @Override
     public AmlCheckResult checkStatus(CreditBureauRequest request) {
+        AmlCheckResult lastResult = new AmlCheckResult.TechnicalError(AmlCheckResult.TechnicalError.ErrorCode.SERVICE_ERROR);
+
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            lastResult = doRequest(request);
+
+            if (lastResult instanceof AmlCheckResult.Success) {
+                return lastResult;
+            }
+            if (lastResult instanceof AmlCheckResult.TechnicalError technicalError
+                    && technicalError.code() == AmlCheckResult.TechnicalError.ErrorCode.VALIDATION_ERROR) {
+                return lastResult;
+            }
+            // SERVICE_ERROR — пробуем ещё раз
+        }
+
+        return new AmlCheckResult.RetryExhausted();
+    }
+
+    private AmlCheckResult doRequest(CreditBureauRequest request) {
         try {
             String xmlBody = buildXmlRequestBody(request);
 
