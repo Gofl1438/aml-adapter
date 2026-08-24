@@ -67,8 +67,10 @@ public class ClientCheckService {
 
         log.info("Запрос AML-статуса: id={}", id);
 
+        String fullFio = buildFio(client.lastName(), client.firstName(), client.middleName());
+
         CreditBureauRequest request = new CreditBureauRequest(
-                client.fio(),
+                fullFio,
                 client.inn(),
                 client.snils()
         );
@@ -142,5 +144,12 @@ public class ClientCheckService {
         }
 
         return new TimerCheckResult.Allowed();
+    }
+
+    private String buildFio(String lastName, String firstName, String middleName) {
+        if (middleName == null || middleName.isBlank()) {
+            return (lastName + " " + firstName).trim();
+        }
+        return (lastName + " " + firstName + " " + middleName).trim();
     }
 }
