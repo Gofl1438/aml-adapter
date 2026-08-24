@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import java.util.Map;
 
 @Component
 public class PortfolioHttpClient implements PortfolioClient {
@@ -45,7 +46,9 @@ public class PortfolioHttpClient implements PortfolioClient {
     @Override
     public UpdateAmlStatusResult updateAmlStatus(long id, boolean amlStatus) {
         try {
-            String url = portfolioUrl + "/" + id;
+            String url = portfolioUrl + "/" + id + "/aml-status";
+            Map<String, Boolean> requestBody = Map.of("amlStatus", amlStatus);
+            restTemplate.patchForObject(url, requestBody, Void.class);
             return new UpdateAmlStatusResult.Success();
         } catch (HttpClientErrorException.NotFound e) {
             return new UpdateAmlStatusResult.NotFound();
