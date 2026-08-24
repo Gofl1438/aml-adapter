@@ -15,4 +15,7 @@ public sealed interface CheckResult {
 
     record ServiceUnavailable() implements CheckResult {
     }
+
+    record ResultUndefined() implements CheckResult {
+    }
 }

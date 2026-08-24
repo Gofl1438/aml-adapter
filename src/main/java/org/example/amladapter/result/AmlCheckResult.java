@@ -11,4 +11,7 @@ public sealed interface AmlCheckResult {
             SERVICE_ERROR
         }
     }
+
+    record RetryExhausted() implements AmlCheckResult {
+    }
 }
