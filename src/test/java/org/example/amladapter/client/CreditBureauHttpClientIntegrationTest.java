@@ -6,14 +6,13 @@ import org.example.amladapter.result.AmlCheckResult;
 import org.junit.jupiter.api.*;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CreditBureauHttpClientIntegrationTest {
 
     private WireMockBureauServer fakeBureau;
-    //используем адаптер, но используем поддельное бюро
+    //запускаем адаптер, но через поддельное бюро
     private CreditBureauHttpClient client;
 
     @BeforeAll

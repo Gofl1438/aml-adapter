@@ -8,19 +8,19 @@
 ### Запуск с поддельным бюро
 [CreditBureauHttpClientIntegrationTest.java](client/CreditBureauHttpClientIntegrationTest.java)
 ### Что проверяют тесты
- | Название теста          | Что проверяет | Ожидаемый результат |
-|-------------------------|---------------|----------------------|
- | testSuccessResponse     | Адаптер обрабатывает успешный ответ от Бюро с amlStatus = true | `AmlCheckResult.Success` с `amlStatus = true` |
- | testErrorResponse       | Адаптер обрабатывает ошибку от Бюро (SOAP Fault) | `AmlCheckResult.TechnicalError` с кодом `SERVICE_ERROR` |
-| testTimeout             | Адаптер прерывает запрос по таймауту, если Бюро не отвечает | Исключение (или ошибка, если таймаут не настроен) | 
- | testFailFiveThenSuccess | Адаптер выполняет 5 повторных попыток при сбоях, затем успех | `AmlCheckResult.Success` с `amlStatus = true` |
-**Последние два теста не прошли, в адаптере не реализованно
-## 2.Автотесты
+
+| Название теста | Что проверяет | Ожидаемый результат |
+|----------------|---------------|----------------------|
+| `testSuccessResponse` | Адаптер обрабатывает успешный ответ от Бюро с `amlStatus = true` | `AmlCheckResult.Success` с `amlStatus = true` |
+| `testErrorResponse` | Адаптер обрабатывает ошибку от Бюро (SOAP Fault) | `AmlCheckResult.TechnicalError` с кодом `SERVICE_ERROR` |
+| `testTimeout` | Адаптер прерывает запрос по таймауту, если Бюро не отвечает | Исключение (или ошибка, если таймаут не настроен) |
+| `testFailFiveThenSuccess` | Адаптер выполняет 5 повторных попыток при сбоях, затем успех | `AmlCheckResult.Success` с `amlStatus = true` |
+## 2. Автотесты
 Это юнит-тесты проверяющие бизнес логику адаптера 'ClientCheckService'
 Они используют Mockito для подмены внешних сервисов (Бюро, Портфель) и не требует запуска реальных систем.
 ### Запуск автотестов
 [AmlAdapterApplicationTests.java](AmlAdapterApplicationTests.java)
-Кейсы
+
 ### Что проверяют тесты
 | Категория | Что проверяют |
 |-----------|---------------|
@@ -29,3 +29,5 @@
 | Таймер 5 минут | Блокировка (4 минуты назад) и разблокировка (6 минут назад) |
 | Ошибки Бюро | `SERVICE_ERROR` → 503, `VALIDATION_ERROR` → 502 |
 | Ошибки Портфеля | Техническая ошибка → 503, `NotFound` → 404 |
+| Преобразование JSON → XML | Адаптер правильно преобразует объект `CreditBureauRequest` в XML-строку |
+| Парсинг XML → JSON | Адаптер правильно парсит XML-ответ от Бюро в объект `AmlCheckResult` |
