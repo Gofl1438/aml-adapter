@@ -5,7 +5,7 @@ import org.example.amladapter.client.PortfolioClient;
 import org.example.amladapter.dto.Client;
 import org.example.amladapter.result.AmlCheckResult;
 import org.example.amladapter.result.GetClientResult;
-import org.example.amladapter.result.UpdateAmlStatusResult;
+import org.example.amladapter.result.UpdateAmlResult;
 import org.example.amladapter.service.CheckResult;
 import org.example.amladapter.service.ClientCheckService;
 import org.junit.jupiter.api.Test;
@@ -42,10 +42,10 @@ class AmlAdapterApplicationTests {
     //Проверка клиента, положительно
     @Test
     void checkClient_True_Bureau() {
-        Client mockClient = new Client(CLIENT_ID, "Иванов Иван Иванович", "1234567890", "123-456-789-00", null);
+        Client mockClient = new Client(CLIENT_ID, "Иванов", "Иван", "Иванович", "1234567890", "123-456-789-00", null);
         when(portfolioClient.getClient(CLIENT_ID)).thenReturn(new GetClientResult.Success(mockClient));
         when(creditBureauClient.checkStatus(any())).thenReturn(new AmlCheckResult.Success(true));
-        when(portfolioClient.updateAmlStatus(CLIENT_ID, true)).thenReturn(new UpdateAmlStatusResult.Success());
+        when(portfolioClient.updateAmlStatus(CLIENT_ID, true)).thenReturn(new UpdateAmlResult.Success());
 
         CheckResult result = service.checkClient(CLIENT_ID);
 
@@ -57,18 +57,16 @@ class AmlAdapterApplicationTests {
     //должно вернуть false, проверка клиента
     @Test
     void checkClient_False_Bureau() {
-        Client mockClient = new Client(CLIENT_ID, "Петров Петр Петрович", "9876543210", "987-654-321-00", null);
+        Client mockClient = new Client(CLIENT_ID, "Иванов", "Иван", "Иванович", "1234567890", "123-456-789-00", null);
         when(portfolioClient.getClient(CLIENT_ID)).thenReturn(new GetClientResult.Success(mockClient));
         when(creditBureauClient.checkStatus(any())).thenReturn(new AmlCheckResult.Success(false));
-        when(portfolioClient.updateAmlStatus(CLIENT_ID, false)).thenReturn(new UpdateAmlStatusResult.Success());
+        when(portfolioClient.updateAmlStatus(CLIENT_ID, false)).thenReturn(new UpdateAmlResult.Success());
 
         CheckResult result = service.checkClient(CLIENT_ID);
 
         assertInstanceOf(CheckResult.Success.class, result);
         assertEquals(false, ((CheckResult.Success) result).amlStatus());
     }
-
-
 
     // Клиент не найден
     @Test
@@ -82,11 +80,12 @@ class AmlAdapterApplicationTests {
         verify(portfolioClient, never()).updateAmlStatus(anyLong(), anyBoolean());
     }
 
+
     // Тест работы таймера, а именно блокировка проверки
     @Test
     void checkClient_Timer_Block() {
         Instant fourMinutesAgo = Instant.now().minusSeconds(60 * 4);
-        Client mockClient = new Client(CLIENT_ID, "Иванов Иван Иванович", "1234567890", "123-456-789-00", fourMinutesAgo);
+        Client mockClient = new Client(CLIENT_ID, "Иванов", "Иван", "Иванович", "1234567890", "123-456-789-00", fourMinutesAgo);
         when(portfolioClient.getClient(CLIENT_ID)).thenReturn(new GetClientResult.Success(mockClient));
 
         CheckResult result = service.checkClient(CLIENT_ID);
@@ -102,10 +101,10 @@ class AmlAdapterApplicationTests {
     @Test
     void checkClient_Timer_Pass() {
         Instant sixMinutesAgo = Instant.now().minusSeconds(60 * 6);
-        Client mockClient = new Client(CLIENT_ID, "Иванов Иван Иванович", "1234567890", "123-456-789-00", sixMinutesAgo);
+        Client mockClient = new Client(CLIENT_ID, "Иванов", "Иван", "Иванович", "1234567890", "123-456-789-00", sixMinutesAgo);
         when(portfolioClient.getClient(CLIENT_ID)).thenReturn(new GetClientResult.Success(mockClient));
         when(creditBureauClient.checkStatus(any())).thenReturn(new AmlCheckResult.Success(true));
-        when(portfolioClient.updateAmlStatus(CLIENT_ID, true)).thenReturn(new UpdateAmlStatusResult.Success());
+        when(portfolioClient.updateAmlStatus(CLIENT_ID, true)).thenReturn(new UpdateAmlResult.Success());
 
         CheckResult result = service.checkClient(CLIENT_ID);
 
@@ -117,21 +116,21 @@ class AmlAdapterApplicationTests {
     //ошибка, сервис недоступен
     @Test
     void checkClient_Bureau_Unavailable() {
-        Client mockClient = new Client(CLIENT_ID, "Иванов Иван Иванович", "1234567890", "123-456-789-00", null);
+        Client mockClient = new Client(CLIENT_ID, "Иванов", "Иван", "Иванович", "1234567890", "123-456-789-00", null);
         when(portfolioClient.getClient(CLIENT_ID)).thenReturn(new GetClientResult.Success(mockClient));
         when(creditBureauClient.checkStatus(any()))
                 .thenReturn(new AmlCheckResult.TechnicalError(AmlCheckResult.TechnicalError.ErrorCode.SERVICE_ERROR));
 
         CheckResult result = service.checkClient(CLIENT_ID);
 
-        assertInstanceOf(CheckResult.ServiceUnavailable.class, result);
+        assertInstanceOf(CheckResult.RetryRequired.class, result);
         verify(portfolioClient, never()).updateAmlStatus(anyLong(), anyBoolean());
     }
 
     //ошибка валидации
     @Test
     void checkClient_Bureau_ProcessingError() {
-        Client mockClient = new Client(CLIENT_ID, "Иванов Иван Иванович", "1234567890", "123-456-789-00", null);
+        Client mockClient = new Client(CLIENT_ID, "Иванов", "Иван", "Иванович", "1234567890", "123-456-789-00", null);
         when(portfolioClient.getClient(CLIENT_ID)).thenReturn(new GetClientResult.Success(mockClient));
         when(creditBureauClient.checkStatus(any()))
                 .thenReturn(new AmlCheckResult.TechnicalError(AmlCheckResult.TechnicalError.ErrorCode.VALIDATION_ERROR));
@@ -144,27 +143,34 @@ class AmlAdapterApplicationTests {
     //ошибка обновления статуса
     @Test
     void checkClient_ServiceUnavailable() {
-        Client mockClient = new Client(CLIENT_ID, "Иванов Иван Иванович", "1234567890", "123-456-789-00", null);
+        Client mockClient = new Client(CLIENT_ID, "Иванов", "Иван", "Иванович", "1234567890", "123-456-789-00", null);
         when(portfolioClient.getClient(CLIENT_ID)).thenReturn(new GetClientResult.Success(mockClient));
         when(creditBureauClient.checkStatus(any())).thenReturn(new AmlCheckResult.Success(true));
-        when(portfolioClient.updateAmlStatus(CLIENT_ID, true)).thenReturn(new UpdateAmlStatusResult.TechnicalError());
+        when(portfolioClient.markAmlCheckAttempt(CLIENT_ID)).thenReturn(new UpdateAmlResult.Success());
+        when(portfolioClient.updateAmlStatus(CLIENT_ID, true)).thenReturn(new UpdateAmlResult.TechnicalError());
 
         CheckResult result = service.checkClient(CLIENT_ID);
 
-        assertInstanceOf(CheckResult.ServiceUnavailable.class, result);
+        assertInstanceOf(
+                CheckResult.RetryRequired.class,
+                result
+        );
     }
 
     //статус не найден
     @Test
     void checkClient_StatusNotFound() {
-        Client mockClient = new Client(CLIENT_ID, "Иванов Иван Иванович", "1234567890", "123-456-789-00", null);
+        Client mockClient = new Client(CLIENT_ID, "Иванов", "Иван", "Иванович", "1234567890", "123-456-789-00", null);
         when(portfolioClient.getClient(CLIENT_ID)).thenReturn(new GetClientResult.Success(mockClient));
+
         when(creditBureauClient.checkStatus(any())).thenReturn(new AmlCheckResult.Success(true));
-        when(portfolioClient.updateAmlStatus(CLIENT_ID, true)).thenReturn(new UpdateAmlStatusResult.NotFound());
+
+        when(portfolioClient.markAmlCheckAttempt(CLIENT_ID)).thenReturn(new UpdateAmlResult.Success());
+
+        when(portfolioClient.updateAmlStatus(CLIENT_ID, true)).thenReturn(new UpdateAmlResult.NotFound());
 
         CheckResult result = service.checkClient(CLIENT_ID);
-
-        assertInstanceOf(CheckResult.ClientNotFound.class, result);
+        assertInstanceOf(CheckResult.RetryRequired.class, result);
     }
 
     // клиент не найден, сервис не доступен
