@@ -2,6 +2,8 @@ package org.example.amladapter.client;
 
 import org.example.amladapter.dto.CreditBureauRequest;
 import org.example.amladapter.result.AmlCheckResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +18,8 @@ public class CreditBureauHttpClient implements CreditBureauClient {
 
     private final RestTemplate restTemplate;
     private final String creditBureauUrl;
+    private static final Logger log =
+            LoggerFactory.getLogger(PortfolioHttpClient.class);
 
     public CreditBureauHttpClient(
             RestTemplate restTemplate,
@@ -44,7 +48,7 @@ public class CreditBureauHttpClient implements CreditBureauClient {
             // SERVICE_ERROR — пробуем ещё раз
         }
 
-        return new AmlCheckResult.RetryExhausted();
+        return lastResult;
     }
 
     private AmlCheckResult doRequest(CreditBureauRequest request) {

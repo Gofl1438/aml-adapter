@@ -41,19 +41,20 @@ public class ClientCheckController {
                     ));
         }
 
-        if(result instanceof  CheckResult.ProcessingError){
+        if (result instanceof CheckResult.RetryRequired retryRequired) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_GATEWAY)
+                    .body(Map.of(
+                            "error", "Результат не определен.",
+                            "retryAfter", retryRequired.retryAfter()
+                    ));
+        }
+
+        if (result instanceof CheckResult.ProcessingError) {
             return ResponseEntity
                     .status(HttpStatus.BAD_GATEWAY)
                     .body(Map.of(
                             "error", "Не удалось выполнить проверку клиента"
-                    ));
-        }
-
-        if(result instanceof  CheckResult.ResultUndefined){
-            return ResponseEntity
-                    .status(HttpStatus.SERVICE_UNAVAILABLE)
-                    .body(Map.of(
-                            "error", "Результат не определен. Повторите запрос через 5 минут"
                     ));
         }
 

@@ -1,9 +1,10 @@
 package org.example.amladapter.client;
 
 import org.example.amladapter.result.GetClientResult;
-import org.example.amladapter.result.UpdateAmlStatusResult;
+import org.example.amladapter.result.UpdateAmlResult;
 
 public interface PortfolioClient {
     GetClientResult getClient(long id);
-    UpdateAmlStatusResult updateAmlStatus(long id, boolean amlStatus);
+    UpdateAmlResult updateAmlStatus(long id, boolean amlStatus);
+    UpdateAmlResult markAmlCheckAttempt(long id);
 }

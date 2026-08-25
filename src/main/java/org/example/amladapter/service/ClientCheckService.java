@@ -7,7 +7,7 @@ import org.example.amladapter.dto.CreditBureauRequest;
 import org.example.amladapter.result.AmlCheckResult;
 import org.example.amladapter.result.GetClientResult;
 import org.example.amladapter.result.TimerCheckResult;
-import org.example.amladapter.result.UpdateAmlStatusResult;
+import org.example.amladapter.result.UpdateAmlResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -84,15 +84,23 @@ public class ClientCheckService {
                     technicalError.code()
             );
             if(technicalError.code() == AmlCheckResult.TechnicalError.ErrorCode.SERVICE_ERROR){
-                return new CheckResult.ServiceUnavailable();
+                CheckResult amlTimerResult = markAmlCheckAttempt(id);
+
+                if (amlTimerResult != null) {
+                    return amlTimerResult;
+                }
+
+                return new CheckResult.RetryRequired(300);
             }
             if(technicalError.code() == AmlCheckResult.TechnicalError.ErrorCode.VALIDATION_ERROR){
                 return new CheckResult.ProcessingError();
             }
         }
 
-        if (amlCheckResult instanceof AmlCheckResult.RetryExhausted) {
-            return new CheckResult.ResultUndefined();
+        CheckResult amlTimerResult = markAmlCheckAttempt(id);
+
+        if (amlTimerResult != null) {
+            return amlTimerResult ;
         }
 
         AmlCheckResult.Success amlCheckSuccess = (AmlCheckResult.Success) amlCheckResult;
@@ -107,15 +115,15 @@ public class ClientCheckService {
 
         log.info("Обновление AML-статуса клиента: id={}", id);
 
-        UpdateAmlStatusResult updateAmlStatusResult = portfolioClient.updateAmlStatus(client.id(), amlCheckSuccess.amlStatus());
+        UpdateAmlResult updateAmlStatusResult = portfolioClient.updateAmlStatus(client.id(), amlCheckSuccess.amlStatus());
 
-        if (updateAmlStatusResult instanceof UpdateAmlStatusResult.NotFound){
-            log.warn("Клиент не найден при обновлении AML-статуса: id={}", id);
-            return new CheckResult.ClientNotFound();
+        if (updateAmlStatusResult instanceof UpdateAmlResult.NotFound){
+            log.error("Клиент не найден при обновлении AML-статуса: id={}", id);
+            return new CheckResult.RetryRequired(300);
         }
-        if (updateAmlStatusResult instanceof UpdateAmlStatusResult.TechnicalError){
+        if (updateAmlStatusResult instanceof UpdateAmlResult.TechnicalError){
             log.error("Ошибка обновления AML-статуса: id={}", id);
-            return new CheckResult.ServiceUnavailable();
+            return new CheckResult.RetryRequired(300);
         }
 
         log.info(
@@ -152,5 +160,27 @@ public class ClientCheckService {
         }
         return (lastName + " " + firstName + " " + patronymic).trim();
     }
+
+    private CheckResult markAmlCheckAttempt(long id) {
+        UpdateAmlResult result =
+                portfolioClient.markAmlCheckAttempt(id);
+
+        if (result instanceof UpdateAmlResult.NotFound) {
+            log.error("Клиент не найден при записи времени: id={}", id);
+            return new CheckResult.ClientNotFound();
+        }
+
+        if (result instanceof UpdateAmlResult.TechnicalError) {
+            log.error("Ошибка записи времени: id={}", id);
+            return new CheckResult.ServiceUnavailable();
+        }
+
+        log.info(
+                "Время проверки успешно обновлено: id={}",
+                id
+        );
+        return null;
+    }
+
 
 }

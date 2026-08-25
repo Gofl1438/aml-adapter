@@ -14,4 +14,3 @@ public record Client(
         Instant amlCheckedAt
 ) {
 }
-
