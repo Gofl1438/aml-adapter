@@ -67,7 +67,7 @@ public class ClientCheckService {
 
         log.info("Запрос AML-статуса: id={}", id);
 
-        String fullFio = buildFio(client.lastName(), client.firstName(), client.middleName());
+        String fullFio = buildFio(client.lastName(), client.firstName(), client.patronymic());
 
         CreditBureauRequest request = new CreditBureauRequest(
                 fullFio,
@@ -146,10 +146,11 @@ public class ClientCheckService {
         return new TimerCheckResult.Allowed();
     }
 
-    private String buildFio(String lastName, String firstName, String middleName) {
-        if (middleName == null || middleName.isBlank()) {
+    private String buildFio(String lastName, String firstName, String patronymic) {
+        if (patronymic == null || patronymic.isBlank()) {
             return (lastName + " " + firstName).trim();
         }
-        return (lastName + " " + firstName + " " + middleName).trim();
+        return (lastName + " " + firstName + " " + patronymic).trim();
     }
+
 }
