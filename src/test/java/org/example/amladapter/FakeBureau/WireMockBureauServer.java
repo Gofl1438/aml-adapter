@@ -1,27 +1,25 @@
 package org.example.amladapter.FakeBureau;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 
 public class WireMockBureauServer {
     private WireMockServer server;
-
+    //запуск поддельного бюро
     public void start() {
         server = new WireMockServer(wireMockConfig().port(8082));
         server.start();
         configureFor("localhost", 8082);
     }
-
+    //остановка поддельного бюро
     public void stop() {
         if (server != null) {
             server.stop();
         }
     }
-
+    //сбрасывания перед тестами
     public void reset() {
         if (server != null) {
             server.resetAll();
@@ -65,9 +63,9 @@ public class WireMockBureauServer {
         String successXml = "<checkClientResponse><amlStatus>" + amlStatus + "</amlStatus></checkClientResponse>";
 
         String errorXml = "<soap:Envelope><soap:Body><soap:Fault>" +
-                            "<faultcode>soap:Server</faultcode>" +
-                            "<faultstring>Service unavailable</faultstring>" +
-                        "</soap:Fault></soap:Body></soap:Envelope>";
+                "<faultcode>soap:Server</faultcode>" +
+                "<faultstring>Service unavailable</faultstring>" +
+                "</soap:Fault></soap:Body></soap:Envelope>";
 
         stubFor(post("/check")
                 .inScenario("bureau-retry")

@@ -1,18 +1,21 @@
 package org.example.amladapter;
 
 import org.example.amladapter.client.CreditBureauClient;
+import org.example.amladapter.client.CreditBureauHttpClient;
 import org.example.amladapter.client.PortfolioClient;
 import org.example.amladapter.dto.Client;
+import org.example.amladapter.dto.CreditBureauRequest;
 import org.example.amladapter.result.AmlCheckResult;
 import org.example.amladapter.result.GetClientResult;
 import org.example.amladapter.result.UpdateAmlResult;
 import org.example.amladapter.service.CheckResult;
 import org.example.amladapter.service.ClientCheckService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-
+import java.lang.reflect.Method;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,9 +26,11 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class AmlAdapterApplicationTests {
 
+    @SuppressWarnings("unused")
     @MockBean
     private PortfolioClient portfolioClient;
 
+    @SuppressWarnings("unused")
     @MockBean
     private CreditBureauClient creditBureauClient;
 
@@ -34,9 +39,11 @@ class AmlAdapterApplicationTests {
 
     private final long CLIENT_ID = 1L;
 
-    @Test
-    void contextLoads() {
-        // Просто проверка, что контекст поднялся
+    private CreditBureauHttpClient client;
+
+    @BeforeEach
+    void setUp() {
+        client = new CreditBureauHttpClient(null, "http://localhost:8082/check");
     }
 
     //Проверка клиента, положительно
@@ -50,7 +57,7 @@ class AmlAdapterApplicationTests {
         CheckResult result = service.checkClient(CLIENT_ID);
 
         assertInstanceOf(CheckResult.Success.class, result);
-        assertEquals(true, ((CheckResult.Success) result).amlStatus());
+        assertTrue(((CheckResult.Success) result).amlStatus());
         verify(portfolioClient).updateAmlStatus(CLIENT_ID, true);
     }
 
@@ -65,7 +72,7 @@ class AmlAdapterApplicationTests {
         CheckResult result = service.checkClient(CLIENT_ID);
 
         assertInstanceOf(CheckResult.Success.class, result);
-        assertEquals(false, ((CheckResult.Success) result).amlStatus());
+        assertFalse(((CheckResult.Success) result).amlStatus());
     }
 
     // Клиент не найден
@@ -183,6 +190,47 @@ class AmlAdapterApplicationTests {
         assertInstanceOf(CheckResult.ServiceUnavailable.class, result);
         verify(creditBureauClient, never()).checkStatus(any());
         verify(portfolioClient, never()).updateAmlStatus(anyLong(), anyBoolean());
+    }
+
+    @Test
+    void testBuildXmlRequestBody() throws Exception {
+        CreditBureauRequest request = new CreditBureauRequest(
+                "Иванов Иван Иванович",
+                "1234567890",
+                "123-456-789-00"
+        );
+
+        Method method = CreditBureauHttpClient.class.getDeclaredMethod(
+                "buildXmlRequestBody",
+                CreditBureauRequest.class
+        );
+        method.setAccessible(true);
+
+        String actualXml = (String) method.invoke(client, request);
+
+        String expectedXml = "<checkClient>" +
+                "<fio>Иванов Иван Иванович</fio>" +
+                "<inn>1234567890</inn>" +
+                "<snils>123-456-789-00</snils>" +
+                "</checkClient>";
+
+        assertEquals(expectedXml, actualXml);
+    }
+
+    @Test
+    void testParseXmlResponse() throws Exception {
+        String xml = "<checkClientResponse><amlStatus>true</amlStatus></checkClientResponse>";
+
+        Method method = CreditBureauHttpClient.class.getDeclaredMethod(
+                "parseXmlResponse",
+                String.class
+        );
+        method.setAccessible(true);
+
+        AmlCheckResult result = (AmlCheckResult) method.invoke(client, xml);
+
+        assertInstanceOf(AmlCheckResult.Success.class, result);
+        assertTrue(((AmlCheckResult.Success) result).amlStatus());
     }
 
 }
